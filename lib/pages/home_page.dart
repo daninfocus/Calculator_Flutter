@@ -10,23 +10,31 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  TextEditingController _textController = TextEditingController(text: '');
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // appBar: AppBar(
-      //   toolbarHeight: 80,
-      //   title: child: Text('Calculadora'),
-      //   actions: [Icon(Icons.bluetooth)],
-      // ),
+      extendBodyBehindAppBar: true,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        shadowColor: Colors.transparent,
+        systemOverlayStyle: const SystemUiOverlayStyle(
+          statusBarColor: Color(0xFF022B14),
+          systemNavigationBarColor: Colors.white,
+        ),
+      ),
       body: Container(
+        color: Colors.black54,
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
             _cajaText(),
             _primeraFila(),
             _segundaFila(),
             _terceraFila(),
-            _cuartaFila()
+            _cuartaFila(),
+            _quintaFila()
           ],
         ),
       ),
@@ -37,10 +45,10 @@ class _HomePageState extends State<HomePage> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
-        _boton("7", () => null),
-        _boton("8", () => null),
-        _boton("9", () => null),
-        _boton("+", () => null)
+        _boton(() => null, numero: 'AC'),
+        _boton(() => null, numero: '()'),
+        _boton(() => null, icono: Icon(CupertinoIcons.percent)),
+        _boton(() => null, icono: Icon(CupertinoIcons.divide)),
       ],
     );
   }
@@ -49,10 +57,10 @@ class _HomePageState extends State<HomePage> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
-        _boton("4", () => null),
-        _boton("5", () => null),
-        _boton("6", () => null),
-        _boton("-", () => null)
+        _boton(() => appendCharacters('7'), numero: '7'),
+        _boton(() => appendCharacters('8'), numero: '8'),
+        _boton(() => appendCharacters('9'), numero: '9'),
+        _boton(() => null, icono: Icon(CupertinoIcons.multiply)),
       ],
     );
   }
@@ -61,10 +69,10 @@ class _HomePageState extends State<HomePage> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
-        _boton("1", () => null),
-        _boton("2", () => null),
-        _boton("3", () => null),
-        _boton("*", () => null)
+        _boton(() => appendCharacters('4'), numero: '4'),
+        _boton(() => appendCharacters('5'), numero: '5'),
+        _boton(() => appendCharacters('6'), numero: '6'),
+        _boton(() => null, icono: Icon(CupertinoIcons.minus)),
       ],
     );
   }
@@ -73,34 +81,112 @@ class _HomePageState extends State<HomePage> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
-        _boton('C', () => null),
-        _boton('0', () => null),
-        _boton('=', () => null),
-        _boton('/', () => null),
+        _boton(() => appendCharacters('1'), numero: '1'),
+        _boton(() => appendCharacters('2'), numero: '2'),
+        _boton(() => appendCharacters('3'), numero: '3'),
+        _boton(() => null, icono: Icon(CupertinoIcons.add)),
       ],
     );
   }
 
-  Widget _boton(String numero, Function() f) {
-    return MaterialButton(
-      height: 100,
-      child: Text(numero,
-          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 24.0)),
-      textColor: Colors.grey,
-      onPressed: f,
+  Row _quintaFila() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      children: [
+        _boton(() => appendCharacters('0'), numero: '0'),
+        _boton(() => appendCharacters('.'), numero: '.'),
+        _boton(() => deleteCharacter(),
+            icono: const Icon(CupertinoIcons.delete_left)),
+        _boton(() => appendCharacters('='), numero: '='),
+      ],
+    );
+  }
+
+  void deleteCharacter() {
+    String oldText = _textController.text;
+    oldText = oldText.substring(0, _textController.selection.extentOffset + 1);
+    print(oldText);
+    var newValue = _textController.value.copyWith(
+        text: oldText,
+        selection:
+            TextSelection.fromPosition(TextPosition(offset: oldText.length)));
+
+    _textController.value = newValue;
+  }
+
+  void appendCharacters(String value) {
+    String oldText = _textController.text;
+    String newText = oldText + value;
+
+    var newValue = _textController.value.copyWith(
+        text: newText,
+        selection:
+            TextSelection.fromPosition(TextPosition(offset: newText.length)));
+
+    _textController.value = newValue;
+  }
+
+  Widget _boton(Function() f, {String? numero, Icon? icono}) {
+    return ClipRRect(
+      borderRadius: const BorderRadius.all(Radius.circular(90)),
+      child: MaterialButton(
+        height: 80,
+        minWidth: 80,
+        child: numero != null
+            ? Text(numero,
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 24.0))
+            : icono,
+        textColor: Colors.grey,
+        onPressed: f,
+      ),
     );
   }
 
   Container _cajaText() {
     return Container(
-      constraints: BoxConstraints.expand(height: 150),
-      alignment: Alignment.bottomRight,
-      color: Colors.white,
-      child: Text(
-        "0",
-        style: TextStyle(fontSize: 50.0, color: Colors.black),
-        textAlign: TextAlign.right,
-      ),
-    );
+        decoration: const BoxDecoration(
+            color: Color(0xFF022B14),
+            borderRadius: BorderRadius.only(
+                bottomLeft: Radius.circular(25),
+                bottomRight: Radius.circular(25))),
+        alignment: Alignment.bottomRight,
+        //color: Colors.white,
+        height: 250,
+        child: Column(
+            mainAxisAlignment: MainAxisAlignment.end,
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  SizedBox(
+                      width: MediaQuery.of(context).size.width,
+                      child: Directionality(
+                          textDirection: TextDirection.rtl,
+                          child: TextField(
+                            keyboardType: TextInputType.number,
+                            cursorColor: Colors.white,
+                            showCursor: true,
+                            readOnly: true,
+                            style: const TextStyle(
+                              fontSize: 40.0,
+                              height: 2.0,
+                            ),
+                            controller: _textController,
+                            decoration: InputDecoration.collapsed(hintText: ''),
+                          ))),
+                ],
+              ),
+              ClipRRect(
+                borderRadius: BorderRadius.all(Radius.circular(5)),
+                child: Divider(
+                  color: Colors.blueGrey,
+                  height: 40,
+                  thickness: 4,
+                  indent: 170,
+                  endIndent: 170,
+                ),
+              ),
+            ]));
   }
 }
