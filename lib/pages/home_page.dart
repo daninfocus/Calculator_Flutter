@@ -11,7 +11,7 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   TextEditingController _textController = TextEditingController(text: '');
-
+  bool hasDecimal = false;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -94,7 +94,7 @@ class _HomePageState extends State<HomePage> {
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
         _boton(() => appendCharacters('0'), numero: '0'),
-        _boton(() => appendCharacters('.'), numero: '.'),
+        _boton(() => appendDecimal('.'), numero: '.'),
         _boton(() => deleteCharacter(),
             icono: const Icon(CupertinoIcons.delete_left)),
         _boton(() => appendCharacters('='), numero: '='),
@@ -103,15 +103,53 @@ class _HomePageState extends State<HomePage> {
   }
 
   void deleteCharacter() {
-    String oldText = _textController.text;
-    oldText = oldText.substring(0, _textController.selection.extentOffset + 1);
-    print(oldText);
-    var newValue = _textController.value.copyWith(
-        text: oldText,
-        selection:
-            TextSelection.fromPosition(TextPosition(offset: oldText.length)));
+    var cursorPos = _textController.selection.base.offset;
+    print(cursorPos);
 
-    _textController.value = newValue;
+    //Right text of cursor position
+    //String suffixText = _textController.text.substring(cursorPos);
+    //print(suffixText);
+    // Add new text on cursor position
+    //String specialChars = ' text_1 ';
+    //int length = specialChars.length;
+
+    //Get the left text of cursor
+    //String prefixText = _textController.text.substring(0, cursorPos);
+
+    //_textController.text = prefixText + specialChars + suffixText;
+
+    // Cursor move to end of added text
+    //_textController.selection = TextSelection(
+    //  baseOffset: cursorPos + length,
+    //  extentOffset: cursorPos + length,
+    //);
+    //String oldText = _textController.text;
+    // String firstChunk =
+    //     oldText.substring(0, _textController.selection.extentOffset);
+    //print(_textController.selection.start);
+    // String lastChunk = oldText.substring(
+    //     _textController.selection.extentOffset, oldText.length);
+    //print(oldText);
+    //var newValue = _textController.value.copyWith(
+    //    text: oldText,
+    //    selection:
+    //        TextSelection.fromPosition(TextPosition(offset: oldText.length)));
+    //_textController.value = newValue;
+  }
+
+  void appendDecimal(String decimal) {
+    if (!hasDecimal) {
+      hasDecimal = true;
+      String oldText = _textController.text;
+      String newText = oldText + decimal;
+
+      var newValue = _textController.value.copyWith(
+          text: newText,
+          selection:
+              TextSelection.fromPosition(TextPosition(offset: newText.length)));
+
+      _textController.value = newValue;
+    }
   }
 
   void appendCharacters(String value) {
@@ -161,20 +199,18 @@ class _HomePageState extends State<HomePage> {
                 children: [
                   SizedBox(
                       width: MediaQuery.of(context).size.width,
-                      child: Directionality(
-                          textDirection: TextDirection.rtl,
-                          child: TextField(
-                            keyboardType: TextInputType.number,
-                            cursorColor: Colors.white,
-                            showCursor: true,
-                            readOnly: true,
-                            style: const TextStyle(
-                              fontSize: 40.0,
-                              height: 2.0,
-                            ),
-                            controller: _textController,
-                            decoration: InputDecoration.collapsed(hintText: ''),
-                          ))),
+                      child: TextField(
+                        //keyboardType: TextInputType.number,
+                        cursorColor: Colors.white,
+                        showCursor: true,
+                        readOnly: true,
+                        style: const TextStyle(
+                          fontSize: 40.0,
+                          height: 2.0,
+                        ),
+                        controller: _textController,
+                        decoration: InputDecoration.collapsed(hintText: ''),
+                      )),
                 ],
               ),
               ClipRRect(
