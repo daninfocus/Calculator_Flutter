@@ -1,18 +1,18 @@
-import 'package:flutter/animation.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:function_tree/function_tree.dart';
 import 'package:intl/intl.dart';
+import 'package:mouse_parallax/mouse_parallax.dart';
 
-class HomePage extends StatefulWidget {
-  const HomePage({Key? key}) : super(key: key);
+class HomePageWeb extends StatefulWidget {
+  const HomePageWeb({Key? key}) : super(key: key);
 
   @override
-  State<HomePage> createState() => _HomePageState();
+  State<HomePageWeb> createState() => _HomePageState();
 }
 
-class _HomePageState extends State<HomePage> {
+class _HomePageState extends State<HomePageWeb> {
   String _textResult = '';
 
   bool _hasDecimal = false;
@@ -22,38 +22,78 @@ class _HomePageState extends State<HomePage> {
   TextEditingController _textController = TextEditingController(text: '');
 
   Map<String, String> _history = {};
-
   @override
   Widget build(BuildContext context) {
+    var width = MediaQuery.of(context).size.width;
     return Scaffold(
       extendBodyBehindAppBar: true,
-      body: SafeArea(
+      body: Padding(
+        padding: width < 900 ? EdgeInsets.all(0) : EdgeInsets.all(100.0),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Container(
+              width: 500,
+              height: MediaQuery.of(context).size.height,
+              child: LayoutBuilder(builder: (context, constraint) {
+                return SingleChildScrollView(
+                    child: ConstrainedBox(
+                        constraints:
+                            BoxConstraints(minHeight: constraint.maxHeight),
+                        child: IntrinsicHeight(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              //_updateHistory(),
+                              const Center(
+                                child: Text(
+                                  'Calculadora',
+                                  style: TextStyle(
+                                      color: Colors.white, fontSize: 22),
+                                ),
+                              ),
+                              _cajaText(),
+                              _primeraFila(),
+                              _segundaFila(),
+                              _terceraFila(),
+                              _cuartaFila(),
+                              _quintaFila(),
+                            ],
+                          ),
+                        )));
+              }),
+            ),
+            _historyListBox()
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _historyListBox() {
+    return Expanded(
+      child: Container(
+        decoration: BoxDecoration(
+            color: Colors.grey.shade800,
+            borderRadius: BorderRadius.circular(25)),
         child: SingleChildScrollView(
-            controller: _scrollController,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                _historyBox(),
-                SizedBox(child: _cajaText()),
-                _primeraFila(),
-                _segundaFila(),
-                _terceraFila(),
-                _cuartaFila(),
-                _quintaFila(),
-              ],
-            )),
+          child: _updateHistory(),
+        ),
       ),
     );
   }
 
   void hideHistory() {
-    _scrollController.jumpTo(_scrollController.position.maxScrollExtent + 57);
+    if (_scrollController.hasClients) {
+      _scrollController.jumpTo(_scrollController.position.maxScrollExtent);
+    }
   }
 
-  Container _historyBox() {
+  Container _updateHistory() {
+    hideHistory();
     List<Widget> _lista = [];
     bool color = true;
-
     _history.forEach((key, item) {
       final entry = GestureDetector(
           onTap: () {
@@ -63,7 +103,7 @@ class _HomePageState extends State<HomePage> {
             });
           },
           child: Container(
-              color: color ? Color(0xFF284A3A) : Color(0xFF3F5E4F),
+              color: color ? Colors.grey.shade700 : Colors.grey.shade800,
               child: Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: Text('$key=$item',
@@ -74,16 +114,34 @@ class _HomePageState extends State<HomePage> {
                         color: Colors.yellow.shade50,
                         overflow: TextOverflow.fade)),
               )));
-
+      print(color);
       color = !color;
       _lista.add(entry);
     });
-
     return Container(
-      color: Color(0xFF284A3A),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: _lista,
+        children: [
+          Container(
+            height: 45,
+            decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(25.0),
+                color: Colors.grey.shade900),
+            child: Center(
+              child: Text(
+                'Historial',
+                style: TextStyle(color: Colors.white, fontSize: 22),
+              ),
+            ),
+          ),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(25.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: _lista,
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -95,13 +153,11 @@ class _HomePageState extends State<HomePage> {
         _boton(() => clearCharacters(),
             numero: 'AC',
             color: Colors.red.shade200,
-            textColor: Colors.red.shade900,
-            width: 180),
-
-        // _boton(() => appendCharacters('%'),
-        //     numero: '%',
-        //     color: Colors.green.shade100,
-        //     textColor: Colors.grey.shade800),
+            textColor: Colors.red.shade900),
+        _boton(() => appendCharacters('%'),
+            numero: '%',
+            color: Colors.green.shade100,
+            textColor: Colors.grey.shade800),
         _boton(() => appendCharacters('^'),
             numero: '^',
             color: Colors.green.shade100,
@@ -264,24 +320,22 @@ class _HomePageState extends State<HomePage> {
   }
 
   void setResult(String currNumbers) {
-    hideHistory();
     if (currNumbers.length > 0) {
       var operatorPos = -1;
 
       var text = _textController.text;
-
+      var textAux = _textController.text;
       while (text.indexOf('x') != -1) {
         text = text.replaceRange(text.indexOf('x'), text.indexOf('x') + 1, '*');
       }
 
       num resultDouble = text.interpret();
       print(resultDouble);
-      var formatter = NumberFormat('###,###,###,###.###############');
+      var formatter = NumberFormat('###,###,###,###.##########');
       String resultFinal = formatter.format(resultDouble);
 
       setState(() {
-        hideHistory();
-        _history[text] = resultFinal;
+        _history[textAux] = resultFinal;
         _textResult = resultFinal;
       });
     }
@@ -293,22 +347,19 @@ class _HomePageState extends State<HomePage> {
       Color? color,
       Color? textColor,
       double width = 90}) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 10.5),
-      child: ClipRRect(
-        borderRadius: const BorderRadius.all(Radius.circular(90)),
-        child: MaterialButton(
-          height: 90,
-          minWidth: width,
-          child: numero != null
-              ? Text(numero,
-                  style: const TextStyle(
-                      fontWeight: FontWeight.bold, fontSize: 24.0))
-              : icono,
-          textColor: textColor == null ? Colors.grey.shade300 : textColor,
-          color: color,
-          onPressed: f,
-        ),
+    return ClipRRect(
+      borderRadius: const BorderRadius.all(Radius.circular(90)),
+      child: MaterialButton(
+        height: 90,
+        minWidth: width,
+        child: numero != null
+            ? Text(numero,
+                style: const TextStyle(
+                    fontWeight: FontWeight.bold, fontSize: 24.0))
+            : icono,
+        textColor: textColor == null ? Colors.grey.shade300 : textColor,
+        color: color,
+        onPressed: f,
       ),
     );
   }
@@ -316,8 +367,7 @@ class _HomePageState extends State<HomePage> {
   Container _cajaText() {
     return Container(
       decoration: BoxDecoration(
-          color: Color(0xFF376952),
-          borderRadius: BorderRadius.vertical(bottom: Radius.circular(25))),
+          color: Color(0xFF376952), borderRadius: BorderRadius.circular(15)),
       height: 250,
       child:
           Column(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
@@ -326,8 +376,8 @@ class _HomePageState extends State<HomePage> {
         ),
         _inputField(),
         _resultText(),
-        Divider(
-          color: Colors.yellow.shade200,
+        const Divider(
+          color: Colors.black45,
           height: 10,
           thickness: 4,
           indent: 170,
@@ -346,7 +396,6 @@ class _HomePageState extends State<HomePage> {
           maxLines: 1,
           cursorColor: Colors.black,
           showCursor: true,
-          readOnly: true,
           style: TextStyle(
               fontFamily: 'digital7',
               fontSize: 100.0,

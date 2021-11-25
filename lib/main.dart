@@ -1,6 +1,7 @@
 import 'package:calculadora/pages/home_page.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
+import 'pages/home_page_web.dart';
 
 void main() {
   runApp(const MyApp());
@@ -14,8 +15,8 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Flutter Demo',
-      theme: ThemeData.dark(),
-      home: const HomePage(),
+      theme: ThemeData(scaffoldBackgroundColor: const Color(0xFF111111)),
+      home: kIsWeb ? HomePageWeb() : HomePage(),
       debugShowCheckedModeBanner: false,
     );
   }
