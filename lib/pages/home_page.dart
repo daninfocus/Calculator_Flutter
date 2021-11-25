@@ -26,23 +26,29 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      extendBodyBehindAppBar: true,
-      body: SafeArea(
-        child: SingleChildScrollView(
-            controller: _scrollController,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                _historyBox(),
-                SizedBox(child: _cajaText()),
-                _primeraFila(),
-                _segundaFila(),
-                _terceraFila(),
-                _cuartaFila(),
-                _quintaFila(),
-              ],
-            )),
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        shadowColor: Colors.transparent,
+        systemOverlayStyle: const SystemUiOverlayStyle(
+          statusBarColor: Color(0xFF376952),
+          systemNavigationBarColor: Colors.white,
+        ),
       ),
+      extendBodyBehindAppBar: true,
+      body: SingleChildScrollView(
+          controller: _scrollController,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              _historyBox(),
+              _cajaText(),
+              _primeraFila(),
+              _segundaFila(),
+              _terceraFila(),
+              _cuartaFila(),
+              _quintaFila(),
+            ],
+          )),
     );
   }
 
@@ -52,8 +58,19 @@ class _HomePageState extends State<HomePage> {
 
   Container _historyBox() {
     List<Widget> _lista = [];
-    bool color = true;
-
+    bool color = false;
+    _lista.add(Container(
+        color: Color(0xFF376952),
+        child: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Text('3x3+2',
+              softWrap: false,
+              style: TextStyle(
+                  fontFamily: 'dotty',
+                  fontSize: 60.0,
+                  color: Colors.yellow.shade50,
+                  overflow: TextOverflow.fade)),
+        )));
     _history.forEach((key, item) {
       final entry = GestureDetector(
           onTap: () {
